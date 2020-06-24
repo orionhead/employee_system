@@ -18,6 +18,20 @@ def on_tab_selected(event):
     if tab_text == "Add New Record":
         print("Add new record tab selected")
 
+
+def load_database_results():
+    try:
+        con = pymysql.connect(host=db_config.DB_SERVER,
+                              user=db_config.DB_USER,
+                              password=db_config.DB_PASS,
+                              database=db_config.DB)
+        con.close()
+        messagebox.showinfo("Connection to Database!")
+    except pymysql.InternalError as e:
+        messagebox.showinfo("Connected Error", e)
+
+    return
+
 file_name = "default.png"
 path = db_config.PHOTO_DIRECTORY + file_name
 
@@ -97,6 +111,7 @@ buttonAddImage.grid(row=4, column=2, padx=15, pady=15)
 
 imageLabelTabTwo.grid(row=0, column=2, rowspan=3, padx=15, pady=15)
 
+load_database_results()
 tab_parent.pack(expand=1, fill='both')
 
 form.mainloop()
