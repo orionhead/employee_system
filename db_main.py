@@ -20,17 +20,46 @@ def on_tab_selected(event):
 
 
 def load_database_results():
+    global rows
+    global num_of_rows
     try:
         con = pymysql.connect(host=db_config.DB_SERVER,
                               user=db_config.DB_USER,
                               password=db_config.DB_PASS,
                               database=db_config.DB)
+        sql = "SELECT * FROM emoloyee_table"
+        cursor = con.cursor()
+        cursor.execute(sql)
+        rows = cursor.fetchall()
+        num_of_rows = cursor.rowcount
         con.close()
-        messagebox.showinfo("Connection to Database!")
+        has_loaded_successfully = True
+        messagebox.showinfo("Connection to Database!", "Connected")
     except pymysql.InternalError as e:
-        messagebox.showinfo("Connected Error", e)
+        has_loaded_successfully = database_error(e)
+    except pymysql.OperationalError as e:
+        has_loaded_successfully = database_error(e)
+    except pymysql.ProgrammingError as e:
+        has_loaded_successfully = database_error(e)
+    except pymysql.DataError as e:
+        has_loaded_successfully = database_error(e)
+    except pymysql.IntegrityError as e:
+        has_loaded_successfully = database_error(e)
+    except pymysql.NotSupportedError as e:
+        has_loaded_successfully = database_error(e)
+    return has_loaded_successfully
 
-    return
+
+def database_error(err):
+    messagebox.showinfo("Error", err)
+    return False
+
+
+def image_path(file_path):
+    # open_image = Image.open(file_path)
+    # image = ImageTk.PhotoImage(open_image)
+    return ImageTk.PhotoImage(Image.open(file_path))
+
 
 file_name = "default.png"
 path = db_config.PHOTO_DIRECTORY + file_name
@@ -48,18 +77,28 @@ tab_parent.bind("<<NotebookTabChanged>>", on_tab_selected)
 tab_parent.add(tab1, text='All Records')
 tab_parent.add(tab2, text='Add New Record')
 
+# Set up StringVars
+fName = tk.StringVar()
+fam = tk.StringVar()
+job = tk.StringVar()
+
+fNameTabTwo = tk.StringVar()
+famTabTwo = tk.StringVar()
+jobTabTwo = tk.StringVar()
+
 # ADDING WIDGET TO TAB ONE
 firstLabelTabOne = tk.Label(tab1,
                             text='First name:')  # whats in the bracket is tab1 beacuse it has to be shown on the tab not the form
 familyLabelTabOne = tk.Label(tab1, text='Family Name:')
 jobLabelTabOne = tk.Label(tab1, text='Job Title')
 
-firstEntryTabOne = tk.Entry(tab1)
-familyEntryTabOne = tk.Entry(tab1)
-jobEntryTabOne = tk.Entry(tab1)
+firstEntryTabOne = tk.Entry(tab1, textvariable=fName)
+familyEntryTabOne = tk.Entry(tab1, textvariable=fam)
+jobEntryTabOne = tk.Entry(tab1, textvariable=job)
 
-openImageTabOne = Image.open(path)
-imgTabOne = ImageTk.PhotoImage(openImageTabOne)
+# openImageTabOne = Image.open(path)
+# imgTabOne = ImageTk.PhotoImage(openImageTabOne)
+imgTabOne = image_path(path)
 imgLabelTabOne = tk.Label(tab1, image=imgTabOne)
 
 buttonForward = tk.Button(tab1, text='Forward')
@@ -85,13 +124,14 @@ firstLabelTabTwo = tk.Label(tab2, text='FirstName')
 familyLabelTabTwo = tk.Label(tab2, text='Family Name')
 jobLabelTabTwo = tk.Label(tab2, text='Job Title')
 
-firstEntryTabTwo = tk.Entry(tab2)
-familyEntryTabTwo = tk.Entry(tab2)
-jobEntryTabTwo = tk.Entry(tab2)
+firstEntryTabTwo = tk.Entry(tab2, textvariable=fNameTabTwo)
+familyEntryTabTwo = tk.Entry(tab2, textvariable=famTabTwo)
+jobEntryTabTwo = tk.Entry(tab2, textvariable=jobTabTwo)
 
-openImageTabTwo = Image.open(path)
-imgTabTwo = ImageTk.PhotoImage(openImageTabOne)
-imageLabelTabTwo = tk.Label(tab2, image = imgTabTwo)
+# openImageTabTwo = Image.open(path)
+# imgTabTwo = ImageTk.PhotoImage(openImageTabOne)
+imageTabTwo = image_path(path)
+imageLabelTabTwo = tk.Label(tab2, image=imageTabTwo)
 
 buttonCommit = tk.Button(tab2, text='Add Record To Database')
 buttonAddImage = tk.Button(tab2, text='Add Image')
@@ -111,7 +151,11 @@ buttonAddImage.grid(row=4, column=2, padx=15, pady=15)
 
 imageLabelTabTwo.grid(row=0, column=2, rowspan=3, padx=15, pady=15)
 
-load_database_results()
+success = load_database_results()
+if success:
+    fName.set(rows[0][1])
+    fam.set(rows[0][2])
+    job.set(rows[0][3])
 tab_parent.pack(expand=1, fill='both')
 
 form.mainloop()
