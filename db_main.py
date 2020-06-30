@@ -127,6 +127,11 @@ def load_photo_tab_two(file_path):
     imageLabelTabTwo.image = image
 
 
+def add_new_record():
+    global blank_text_boxes_tab_two
+    global file_new_home
+    global file_to_copy
+
 file_name = "default.png"
 path = db_config.PHOTO_DIRECTORY + file_name
 rows = None
@@ -136,6 +141,7 @@ image_selected = False
 image_file_name = None
 file_new_home = None
 file_to_copy = None
+blank_text_boxes_tab_two = None
 
 form = tk.Tk()
 form.title('Database Form')
